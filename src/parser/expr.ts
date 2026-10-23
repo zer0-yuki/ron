@@ -11,7 +11,7 @@ export interface VarExpr {
 export interface AppExpr {
   kind: 'app'
   fn: Expr
-  args: Expr[]
+  args: [Expr, ...Expr[]]
 }
 
 export interface UnaryOpExprOf<O> {
@@ -49,7 +49,7 @@ export const Expr = {
   var(name: string): VarExpr {
     return { kind: 'var', name }
   },
-  app(fn: Expr, args: Expr[]): AppExpr {
+  app(fn: Expr, args: [Expr, ...Expr[]]): AppExpr {
     return { kind: 'app', fn, args }
   },
   unary<O extends UnaryOp>(o: O, e: Expr): UnaryOpExprOf<O> {

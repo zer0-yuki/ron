@@ -4,9 +4,9 @@ import {
   choice,
   lazy,
   many,
+  many1,
   map,
   pair,
-  pairR,
   Parser,
   satisfy,
 } from '../utils/parser/index.js'
@@ -31,10 +31,20 @@ const ident = map(token('ident', 'identifier'), (t) => Expr.var(t.name))
 // atomExpr ::= int | ident | '(' expr ')'
 const atomExpr = choice([int, ident, between(symbol('('), expr, symbol(')'))], 'primary expression')
 
-// unaryExpr ::= (('+' | '-') unaryExpr) | atomExpr
+// appExpr ::= atomExpr+
+const appExpr = map(many1(atomExpr), ([fn, ...args]) => {
+  return args.length === 0 ? fn : Expr.app(fn, args as [Expr, ...Expr[]])
+})
+
+// unaryExpr ::= (('+' | '-') unaryExpr) | appExpr
 const unaryExpr: Parser<Token, Expr> = lazy(() =>
   choice(
-    [pairR(choice([symbol('+'), symbol('-')], 'unary operator'), unaryExpr), atomExpr],
+    [
+      map(pair(choice([symbol('+'), symbol('-')], 'unary operator'), unaryExpr), ([o, e]) =>
+        Expr.unary(o.symbol, e)
+      ),
+      appExpr,
+    ],
     'unary expressions'
   )
 )

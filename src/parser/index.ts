@@ -1,0 +1,57 @@
+import { Symbol, SymbolTokenOf, Token, TokenKind, TokenOf } from '../lexer/token.js'
+import {
+  between,
+  choice,
+  lazy,
+  many,
+  map,
+  pair,
+  pairR,
+  Parser,
+  satisfy,
+} from '../utils/parser/index.js'
+import { additiveOps, Expr, multiplicativeOps } from './expr.js'
+
+const expr: Parser<Token, Expr> = lazy(() => addExpr)
+
+function symbol<S extends Symbol>(s: S): Parser<Token, SymbolTokenOf<S>> {
+  return satisfy(
+    (t: Token): t is SymbolTokenOf<S> => t.kind === 'symbol' && t.symbol === s,
+    `symbol '${s}'`
+  )
+}
+function token<K extends TokenKind>(k: K, expected: string) {
+  return satisfy((t: Token): t is TokenOf<K> => t.kind === k, expected)
+}
+
+const int = map(token('int', 'int'), (t) => Expr.int(t.value))
+
+const ident = map(token('ident', 'identifier'), (t) => Expr.var(t.name))
+
+// atomExpr ::= int | ident | '(' expr ')'
+const atomExpr = choice([int, ident, between(symbol('('), expr, symbol(')'))], 'primary expression')
+
+// unaryExpr ::= (('+' | '-') unaryExpr) | atomExpr
+const unaryExpr: Parser<Token, Expr> = lazy(() =>
+  choice(
+    [pairR(choice([symbol('+'), symbol('-')], 'unary operator'), unaryExpr), atomExpr],
+    'unary expressions'
+  )
+)
+
+// mulExpr ::= unaryExpr (('*' | '/') unaryExpr)*
+const mulExpr = map(
+  pair(
+    unaryExpr,
+    many(pair(choice(multiplicativeOps.map(symbol), 'multiplicative operator'), unaryExpr))
+  ),
+  ([first, rest]) => rest.reduce((l, [o, r]) => Expr.binary(o.symbol, l, r), first)
+)
+
+// addExpr ::= mulExpr (('+' | '-') mulExpr)*
+const addExpr = map(
+  pair(mulExpr, many(pair(choice(additiveOps.map(symbol), 'additive operator'), mulExpr))),
+  ([first, rest]) => rest.reduce<Expr>((l, [o, r]) => Expr.binary(o.symbol, l, r), first)
+)
+
+export { expr as parse }

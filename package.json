@@ -5,12 +5,21 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js"
+    "build": "./node_modules/typescript7/bin/tsc",
+    "typecheck": "./node_modules/typescript7/bin/tsc --noEmit",
+    "lint": "eslint",
+    "start": "node dist/index.js",
+    "format": "prettier --check .",
+    "format:fix": "prettier --check --write ."
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/node": "^26.6.5",
+    "eslint": "^10.13.0",
+    "prettier": "^3.9.10",
     "tsx": "^4.23.15",
-    "typescript": "^7.0.2"
+    "typescript": "npm:@typescript/typescript6@^6.0.2",
+    "typescript-eslint": "^8.72.0",
+    "typescript7": "npm:typescript@^7.0.2"
   }
 }

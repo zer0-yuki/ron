@@ -61,7 +61,7 @@ const mulExpr = map(
 // addExpr ::= mulExpr (('+' | '-') mulExpr)*
 const addExpr = map(
   pair(mulExpr, many(pair(choice(additiveOps.map(symbol), 'additive operator'), mulExpr))),
-  ([first, rest]) => rest.reduce<Expr>((l, [o, r]) => Expr.binary(o.symbol, l, r), first)
+  ([first, rest]) => rest.reduce((l, [o, r]) => Expr.binary(o.symbol, l, r), first)
 )
 
 export { expr as parse }

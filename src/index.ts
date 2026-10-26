@@ -16,7 +16,7 @@ function makeCursor<T>(s: T[]): Cursor<T> {
 }
 
 function main() {
-  const src = '1 + (2 - 3) * 4'
+  const src = 'f x 1 + (2 - 3) * 4'
   const lexResult = lex(makeCursor(Array.from(src)))
 
   if (!lexResult.result.ok) {
@@ -25,7 +25,8 @@ function main() {
   }
 
   console.log(lexResult.cursor.position, '/', src.length)
-  console.log(lexResult.result.value)
+  console.log('Tokens:')
+  console.dir(lexResult.result.value, { depth: null })
 
   const parseResult = parse(makeCursor(lexResult.result.value))
 
@@ -34,7 +35,8 @@ function main() {
     return
   }
 
-  console.log(parseResult.result.value)
+  console.log("AST:")
+  console.dir(parseResult.result.value, { depth: null })
 }
 
 main()

@@ -23,10 +23,10 @@ import {
 } from '../utils/parser/index.js'
 import { additiveOps, Expr, multiplicativeOps, unaryOps, VarExpr } from './expr.js'
 
-function symbol<S extends Punct>(s: S): Parser<Token, PunctTokenOf<S>> {
+function punct<S extends Punct>(s: S): Parser<Token, PunctTokenOf<S>> {
   return satisfy(
-    (t: Token): t is PunctTokenOf<S> => t.kind === 'symbol' && t.punct === s,
-    `symbol '${s}'`
+    (t: Token): t is PunctTokenOf<S> => t.kind === 'punct' && t.punct === s,
+    `punctuator '${s}'`
   )
 }
 
@@ -46,7 +46,7 @@ const int = map(token('int', 'int'), (t) => Expr.int(t.value))
 const ident = map(token('ident', 'identifier'), (t) => Expr.var(t.name))
 
 // atomExpr ::= int | ident | '(' expr ')'
-const atomExpr = choice([int, ident, between(symbol('('), expr, symbol(')'))], 'primary expression')
+const atomExpr = choice([int, ident, between(punct('('), expr, punct(')'))], 'primary expression')
 
 // appExpr ::= atomExpr+
 const appExpr = map(many1(atomExpr), ([fn, ...args]) => {
@@ -57,7 +57,7 @@ const appExpr = map(many1(atomExpr), ([fn, ...args]) => {
 const unaryExpr: Parser<Token, Expr> = lazy(() =>
   choice(
     [
-      map(pair(choice(unaryOps.map(symbol), 'unary operator'), unaryExpr), ([o, e]) =>
+      map(pair(choice(unaryOps.map(punct), 'unary operator'), unaryExpr), ([o, e]) =>
         Expr.unary(o.punct, e)
       ),
       appExpr,
@@ -70,25 +70,25 @@ const unaryExpr: Parser<Token, Expr> = lazy(() =>
 const mulExpr = map(
   pair(
     unaryExpr,
-    many(pair(choice(multiplicativeOps.map(symbol), 'multiplicative operator'), unaryExpr))
+    many(pair(choice(multiplicativeOps.map(punct), 'multiplicative operator'), unaryExpr))
   ),
   ([first, rest]) => rest.reduce((l, [o, r]) => Expr.binary(o.punct, l, r), first)
 )
 
 // addExpr ::= mulExpr (('+' | '-') mulExpr)*
 const addExpr = map(
-  pair(mulExpr, many(pair(choice(additiveOps.map(symbol), 'additive operator'), mulExpr))),
+  pair(mulExpr, many(pair(choice(additiveOps.map(punct), 'additive operator'), mulExpr))),
   ([first, rest]) => rest.reduce((l, [o, r]) => Expr.binary(o.punct, l, r), first)
 )
 
 // paramList ::= ident (',' ident)*
 const paramList = map(
-  pair(ident, many(pairR(symbol(','), ident))),
+  pair(ident, many(pairR(punct(','), ident))),
   ([first, rest]) => [first, ...rest] satisfies [VarExpr, ...VarExpr[]]
 )
 
 // lambdaExpr ::= 'fun' paramList '->' expr
-const lambdaExpr = map(seq(keyword('fun'), paramList, symbol('->'), expr), ([_, args, __, body]) =>
+const lambdaExpr = map(seq(keyword('fun'), paramList, punct('->'), expr), ([_, args, __, body]) =>
   Expr.lambda(args, body)
 )
 

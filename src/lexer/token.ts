@@ -8,9 +8,9 @@ export interface IdentToken {
   name: string
 }
 
-export interface PunctTokenOf<O> {
-  kind: 'symbol'
-  punct: O
+export interface PunctTokenOf<P> {
+  kind: 'punct'
+  punct: P
 }
 
 export interface KeywordTokenOf<K> {
@@ -38,7 +38,7 @@ export const Token = {
     return { kind: 'ident', name }
   },
   punct<P extends Punct>(p: P): PunctTokenOf<P> {
-    return { kind: 'symbol', punct: p }
+    return { kind: 'punct', punct: p }
   },
   keyword<K extends Keyword>(k: K): KeywordTokenOf<K> {
     return { kind: 'keyword', keyword: k }

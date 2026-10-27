@@ -12,8 +12,19 @@ export class UnexpectedError<I> extends ParseErrorBase {
   }
 }
 
+export class ChoiceError<I> extends ParseErrorBase {
+  readonly kind = 'choice' as const
+  constructor(
+    readonly expected: string,
+    readonly found: I | undefined,
+    readonly related: readonly ParseError<I>[]
+  ) {
+    super()
+  }
+}
+
 export class UnknownError extends ParseErrorBase {
   readonly kind = 'unknown' as const
 }
 
-export type ParseError<I> = UnexpectedError<I> | UnknownError
+export type ParseError<I> = UnexpectedError<I> | ChoiceError<I> | UnknownError

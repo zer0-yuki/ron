@@ -1,6 +1,6 @@
 import { err, ok, Result } from '../result.js'
 import { IsTuple, TupleToIntersection } from '../type.js'
-import { ParseError, UnexpectedError } from './error.js'
+import { ChoiceError, ParseError, UnexpectedError } from './error.js'
 
 export interface ParseResult<I, O> {
   readonly cursor: Cursor<I>
@@ -75,11 +75,13 @@ export function choice<Ps extends AnyParser[]>(
   expected: string = 'unknown'
 ): Parser<InputOf<Ps[number]>, OutputOf<Ps[number]>> {
   return (c) => {
+    const errs: ParseError<InputOf<Ps[number]>>[] = []
     for (const p of ps) {
       const r = p(c)
       if (r.result.ok) return r
+      errs.push(r.result.err)
     }
-    return parseErr(c, new UnexpectedError(expected, c.peek()))
+    return parseErr(c, new ChoiceError(expected, c.peek(), errs))
   }
 }
 
@@ -94,7 +96,7 @@ export function or<I, O1, O2>(
     if (r1.result.ok) return r1
     const r2 = p2(c)
     if (r2.result.ok) return r2
-    return parseErr(c, new UnexpectedError(expected, c.peek()))
+    return parseErr(c, new ChoiceError(expected, c.peek(), [r1.result.err, r2.result.err]))
   }
 }
 

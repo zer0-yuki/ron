@@ -43,7 +43,7 @@ const identOrKeyword: Parser<string, IdentToken | KeywordToken> = flatMap(many1(
   return succeed(isKeyword(s) ? Token.keyword(s) : Token.ident(s))
 })
 
-// symbol
+// punct
 function punct<P extends Punct>(p: P) {
   return map(seq(...[...p].map((s) => satisfy((c: string) => c === s, s))), () =>
     Token.punct(p)

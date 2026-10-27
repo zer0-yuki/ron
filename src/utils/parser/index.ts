@@ -121,9 +121,9 @@ export function seq<Ps extends AnyParser[]>(...ps: Ps): Parser<InputsOf<Ps>, Out
 export function pair<I, O1, O2>(p1: Parser<I, O1>, p2: Parser<I, O2>): Parser<I, [O1, O2]> {
   return (c) => {
     const r1 = p1(c)
-    if (!r1.result.ok) return parseErr(c, r1.result.err)
+    if (!r1.result.ok) return parseErr(r1.cursor, r1.result.err)
     const r2 = p2(r1.cursor)
-    if (!r2.result.ok) return parseErr(r1.cursor, r2.result.err)
+    if (!r2.result.ok) return parseErr(r2.cursor, r2.result.err)
     return parseOk(r2.cursor, [r1.result.value, r2.result.value])
   }
 }
@@ -136,11 +136,11 @@ export function between<I, O, L, R>(
 ): Parser<I, O> {
   return (c) => {
     const rL = pL(c)
-    if (!rL.result.ok) return parseErr(c, rL.result.err)
+    if (!rL.result.ok) return parseErr(rL.cursor, rL.result.err)
     const r = p(rL.cursor)
     if (!r.result.ok) return r
     const rR = pR(r.cursor)
-    if (!rR.result.ok) return parseErr(r.cursor, rR.result.err)
+    if (!rR.result.ok) return parseErr(rR.cursor, rR.result.err)
     return parseOk(rR.cursor, r.result.value)
   }
 }
@@ -149,9 +149,9 @@ export function between<I, O, L, R>(
 export function pairL<I, O1, O2>(p1: Parser<I, O1>, p2: Parser<I, O2>): Parser<I, O1> {
   return (c) => {
     const r1 = p1(c)
-    if (!r1.result.ok) return parseErr(c, r1.result.err)
+    if (!r1.result.ok) return parseErr(r1.cursor, r1.result.err)
     const r2 = p2(r1.cursor)
-    if (!r2.result.ok) return parseErr(r1.cursor, r2.result.err)
+    if (!r2.result.ok) return parseErr(r2.cursor, r2.result.err)
     return parseOk(r2.cursor, r1.result.value)
   }
 }
@@ -160,9 +160,9 @@ export function pairL<I, O1, O2>(p1: Parser<I, O1>, p2: Parser<I, O2>): Parser<I
 export function pairR<I, O1, O2>(p1: Parser<I, O1>, p2: Parser<I, O2>): Parser<I, O2> {
   return (c) => {
     const r1 = p1(c)
-    if (!r1.result.ok) return parseErr(c, r1.result.err)
+    if (!r1.result.ok) return parseErr(r1.cursor, r1.result.err)
     const r2 = p2(r1.cursor)
-    if (!r2.result.ok) return parseErr(r1.cursor, r2.result.err)
+    if (!r2.result.ok) return parseErr(r2.cursor, r2.result.err)
     return parseOk(r2.cursor, r2.result.value)
   }
 }
@@ -187,7 +187,7 @@ export function many<I, O>(p: Parser<I, O>): Parser<I, O[]> {
 export function many1<I, O>(p: Parser<I, O>): Parser<I, [O, ...O[]]> {
   return (c) => {
     const r0 = p(c)
-    if (!r0.result.ok) return parseErr(c, r0.result.err)
+    if (!r0.result.ok) return parseErr(r0.cursor, r0.result.err)
 
     const os: [O, ...O[]] = [r0.result.value]
     let cur = r0.cursor
@@ -209,7 +209,7 @@ export function repeat<I, O>(p: Parser<I, O>, n: number): Parser<I, O[]> {
     let cur = c
     for (let i = 0; i < n; i++) {
       const r = p(cur)
-      if (!r.result.ok) return parseErr(cur, r.result.err)
+      if (!r.result.ok) return parseErr(r.cursor, r.result.err)
 
       os.push(r.result.value)
       cur = r.cursor
@@ -222,7 +222,7 @@ export function repeat<I, O>(p: Parser<I, O>, n: number): Parser<I, O[]> {
 export function flatMap<I, M, O>(p: Parser<I, M>, f: (m: M) => Parser<I, O>): Parser<I, O> {
   return (c) => {
     const r = p(c)
-    return r.result.ok ? f(r.result.value)(r.cursor) : parseErr(c, r.result.err)
+    return r.result.ok ? f(r.result.value)(r.cursor) : parseErr(r.cursor, r.result.err)
   }
 }
 
@@ -230,6 +230,6 @@ export function flatMap<I, M, O>(p: Parser<I, M>, f: (m: M) => Parser<I, O>): Pa
 export function map<I, M, O>(p: Parser<I, M>, f: (m: M) => O): Parser<I, O> {
   return (c) => {
     const r = p(c)
-    return r.result.ok ? parseOk(r.cursor, f(r.result.value)) : parseErr(c, r.result.err)
+    return r.result.ok ? parseOk(r.cursor, f(r.result.value)) : parseErr(r.cursor, r.result.err)
   }
 }

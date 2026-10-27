@@ -16,12 +16,11 @@ import {
   map,
   or,
   pair,
-  pairR,
   Parser,
   satisfy,
   seq,
 } from '../utils/parser/index.js'
-import { additiveOps, Expr, multiplicativeOps, unaryOps, VarExpr } from './expr.js'
+import { additiveOps, Expr, multiplicativeOps, unaryOps } from './expr.js'
 
 function punct<S extends Punct>(s: S): Parser<Token, PunctTokenOf<S>> {
   return satisfy(
@@ -81,11 +80,8 @@ const addExpr = map(
   ([first, rest]) => rest.reduce((l, [o, r]) => Expr.binary(o.punct, l, r), first)
 )
 
-// paramList ::= ident (',' ident)*
-const paramList = map(
-  pair(ident, many(pairR(punct(','), ident))),
-  ([first, rest]) => [first, ...rest] satisfies [VarExpr, ...VarExpr[]]
-)
+// paramList ::= ident+
+const paramList = many1(ident)
 
 // lambdaExpr ::= 'fun' paramList '->' expr
 const lambdaExpr = map(seq(keyword('fun'), paramList, punct('->'), expr), ([_, args, __, body]) =>

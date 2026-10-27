@@ -4,9 +4,8 @@ import { Cursor } from './utils/parser/index.js'
 
 function makeCursor<T>(s: T[]): Cursor<T> {
   const mk = (p: number): Cursor<T> => ({
-    position: p,
     peek() {
-      return this.position < s.length ? s[this.position] : undefined
+      return p < s.length ? s[p] : undefined
     },
     advance() {
       return mk(p + 1)
@@ -25,7 +24,7 @@ function main() {
     return
   }
 
-  console.log(lexResult.cursor.position, '/', src.length)
+  console.log('Cursor at end:', lexResult.cursor.peek() === undefined)
   console.log('Tokens:')
   console.dir(lexResult.result.value, { depth: null })
 
@@ -36,7 +35,7 @@ function main() {
     return
   }
 
-  console.log("AST:")
+  console.log('AST:')
   console.dir(parseResult.result.value, { depth: null })
 }
 

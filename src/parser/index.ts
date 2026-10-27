@@ -12,8 +12,6 @@ import {
 } from '../utils/parser/index.js'
 import { additiveOps, Expr, multiplicativeOps } from './expr.js'
 
-const expr: Parser<Token, Expr> = lazy(() => addExpr)
-
 function symbol<S extends Symbol>(s: S): Parser<Token, SymbolTokenOf<S>> {
   return satisfy(
     (t: Token): t is SymbolTokenOf<S> => t.kind === 'symbol' && t.symbol === s,
@@ -23,6 +21,9 @@ function symbol<S extends Symbol>(s: S): Parser<Token, SymbolTokenOf<S>> {
 function token<K extends TokenKind>(k: K, expected: string) {
   return satisfy((t: Token): t is TokenOf<K> => t.kind === k, expected)
 }
+
+// expr ::= addExpr
+const expr: Parser<Token, Expr> = lazy(() => addExpr)
 
 const int = map(token('int', 'int'), (t) => Expr.int(t.value))
 

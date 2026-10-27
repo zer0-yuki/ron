@@ -1,8 +1,8 @@
 import {
   Keyword,
   KeywordTokenOf,
-  Symbol,
-  SymbolTokenOf,
+  Punct,
+  PunctTokenOf,
   Token,
   TokenKind,
   TokenOf,
@@ -23,9 +23,9 @@ import {
 } from '../utils/parser/index.js'
 import { additiveOps, Expr, multiplicativeOps, VarExpr } from './expr.js'
 
-function symbol<S extends Symbol>(s: S): Parser<Token, SymbolTokenOf<S>> {
+function symbol<S extends Punct>(s: S): Parser<Token, PunctTokenOf<S>> {
   return satisfy(
-    (t: Token): t is SymbolTokenOf<S> => t.kind === 'symbol' && t.symbol === s,
+    (t: Token): t is PunctTokenOf<S> => t.kind === 'symbol' && t.punct === s,
     `symbol '${s}'`
   )
 }
@@ -58,7 +58,7 @@ const unaryExpr: Parser<Token, Expr> = lazy(() =>
   choice(
     [
       map(pair(choice([symbol('+'), symbol('-')], 'unary operator'), unaryExpr), ([o, e]) =>
-        Expr.unary(o.symbol, e)
+        Expr.unary(o.punct, e)
       ),
       appExpr,
     ],
@@ -72,13 +72,13 @@ const mulExpr = map(
     unaryExpr,
     many(pair(choice(multiplicativeOps.map(symbol), 'multiplicative operator'), unaryExpr))
   ),
-  ([first, rest]) => rest.reduce((l, [o, r]) => Expr.binary(o.symbol, l, r), first)
+  ([first, rest]) => rest.reduce((l, [o, r]) => Expr.binary(o.punct, l, r), first)
 )
 
 // addExpr ::= mulExpr (('+' | '-') mulExpr)*
 const addExpr = map(
   pair(mulExpr, many(pair(choice(additiveOps.map(symbol), 'additive operator'), mulExpr))),
-  ([first, rest]) => rest.reduce((l, [o, r]) => Expr.binary(o.symbol, l, r), first)
+  ([first, rest]) => rest.reduce((l, [o, r]) => Expr.binary(o.punct, l, r), first)
 )
 
 // paramList ::= ident (',' ident)*

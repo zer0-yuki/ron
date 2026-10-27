@@ -8,9 +8,9 @@ export interface IdentToken {
   name: string
 }
 
-export interface SymbolTokenOf<O> {
+export interface PunctTokenOf<O> {
   kind: 'symbol'
-  symbol: O
+  punct: O
 }
 
 export interface KeywordTokenOf<K> {
@@ -18,15 +18,15 @@ export interface KeywordTokenOf<K> {
   keyword: K
 }
 
-export const symbols = ['->', '+', '-', '*', '/', '(', ')', ','] as const
-export type Symbol = (typeof symbols)[number]
-export type SymbolToken = SymbolTokenOf<Symbol>
+export const puncts = ['->', '+', '-', '*', '/', '(', ')', ','] as const
+export type Punct = (typeof puncts)[number]
+export type PunctToken = PunctTokenOf<Punct>
 
 export const keywords = ['let', 'in', 'fun'] as const
 export type Keyword = (typeof keywords)[number]
 export type KeywordToken = KeywordTokenOf<Keyword>
 
-export type Token = IntToken | IdentToken | SymbolToken | KeywordToken
+export type Token = IntToken | IdentToken | PunctToken | KeywordToken
 export type TokenKind = Token['kind']
 export type TokenOf<K extends TokenKind> = Extract<Token, { kind: K }>
 
@@ -37,8 +37,8 @@ export const Token = {
   ident(name: string): IdentToken {
     return { kind: 'ident', name }
   },
-  symbol<S extends Symbol>(s: S): SymbolTokenOf<S> {
-    return { kind: 'symbol', symbol: s }
+  punct<P extends Punct>(p: P): PunctTokenOf<P> {
+    return { kind: 'symbol', punct: p }
   },
   keyword<K extends Keyword>(k: K): KeywordTokenOf<K> {
     return { kind: 'keyword', keyword: k }

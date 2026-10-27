@@ -17,9 +17,9 @@ import {
   Keyword,
   keywords,
   KeywordToken,
-  Symbol,
-  symbols,
-  SymbolToken,
+  Punct,
+  puncts,
+  PunctToken,
   Token,
 } from './token.js'
 
@@ -44,13 +44,13 @@ const identOrKeyword: Parser<string, IdentToken | KeywordToken> = flatMap(many1(
 })
 
 // symbol
-function symbolOf<S extends Symbol>(s: S) {
-  return map(seq(...[...s].map((char) => satisfy((c: string) => c === char, char))), () =>
-    Token.symbol(s)
+function punct<P extends Punct>(p: P) {
+  return map(seq(...[...p].map((s) => satisfy((c: string) => c === s, s))), () =>
+    Token.punct(p)
   )
 }
 
-const symbol: Parser<string, SymbolToken> = choice(symbols.map(symbolOf))
+const symbol: Parser<string, PunctToken> = choice(puncts.map(punct))
 
 // lexer
 export const lex: Parser<string, Token[]> = pairR(

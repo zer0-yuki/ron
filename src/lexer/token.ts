@@ -18,7 +18,9 @@ export interface KeywordTokenOf<K> {
   keyword: K
 }
 
-export const puncts = ['->', '+', '-', '*', '/', '(', ')', ','] as const
+export const punctsSingle = ['+', '-', '*', '/', '(', ')', ','] as const
+export const punctsDouble = ['->'] as const
+export const puncts = [...punctsDouble, ...punctsSingle] as const
 export type Punct = (typeof puncts)[number]
 export type PunctToken = PunctTokenOf<Punct>
 

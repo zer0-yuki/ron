@@ -48,14 +48,8 @@ function symbolOf<S extends Symbol>(s: S) {
     (s) => Token.symbol(s)
   )
 }
-const symbol: Parser<string, SymbolToken> = choice([
-  symbolOf('+'),
-  symbolOf('-'),
-  symbolOf('*'),
-  symbolOf('/'),
-  symbolOf('('),
-  symbolOf(')'),
-])
+
+const symbol: Parser<string, SymbolToken> = choice(symbols.map(symbolOf))
 
 // lexer
 export const lex: Parser<string, Token[]> = pairR(

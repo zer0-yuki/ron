@@ -1,4 +1,5 @@
 import { err, ok, Result } from '../result.js'
+import { IsTuple, TupleToIntersection } from '../type.js'
 import { ParseError, UnexpectedError, UnknownError } from './error.js'
 
 export type ParseResult<I, O> = {
@@ -10,10 +11,13 @@ type OutputOf<P> = P extends Parser<any, infer O> ? O : never
 type OutputsOf<Ps extends readonly Parser<any, any>[]> = {
   [K in keyof Ps]: OutputOf<Ps[K]>
 }
-type UnionToIntersection<U> = (U extends any ? (x: U) => void : never) extends (x: infer I) => void
-  ? I
-  : never
-type InputsOf<Ps extends readonly Parser<any, any>[]> = UnionToIntersection<InputOf<Ps[number]>>
+type InputTupleOf<Ps extends readonly Parser<any, any>[]> = Ps extends [infer First, ...infer Rest]
+  ? Rest extends Parser<any, any>[]
+    ? [InputOf<First>, ...InputTupleOf<Rest>]
+    : never
+  : []
+type InputsOf<Ps extends readonly Parser<any, any>[]> =
+  IsTuple<Ps> extends true ? TupleToIntersection<InputTupleOf<Ps>> : InputOf<Ps[number]>
 
 function parseResult<I, O>(c: Cursor<I>, r: Result<O, ParseError<I>>): ParseResult<I, O> {
   return { cursor: c, result: r }
@@ -97,7 +101,7 @@ export function seq<Ps extends Parser<any, any>[]>(...ps: Ps): Parser<InputsOf<P
 }
 
 export function pair<I, O1, O2>(p1: Parser<I, O1>, p2: Parser<I, O2>): Parser<I, [O1, O2]> {
-  return seq(p1, p2) as Parser<I, [O1, O2]>
+  return seq(p1, p2)
 }
 
 export function between<I, O, L, R>(
@@ -106,11 +110,8 @@ export function between<I, O, L, R>(
   pR: Parser<I, R>
 ): Parser<I, O> {
   return (c) => {
-    const r = seq(pL, p, pR)(c as Cursor<UnionToIntersection<I>>)
-    return parseResult(
-      r.cursor as Cursor<I>,
-      r.result.ok ? ok(r.result.value[1]) : err(r.result.err as ParseError<I>)
-    )
+    const r = seq(pL, p, pR)(c)
+    return parseResult(r.cursor, r.result.ok ? ok(r.result.value[1]) : err(r.result.err))
   }
 }
 
@@ -144,7 +145,7 @@ export function many1<I, O>(p: Parser<I, O>): Parser<I, [O, ...O[]]> {
 }
 
 export function repeat<I, O>(p: Parser<I, O>, n: number): Parser<I, O[]> {
-  return seq(...(Array(n).fill(p) as Parser<I, O>[])) as Parser<I, O[]>
+  return seq(...Array<Parser<I, O>>(n).fill(p))
 }
 
 export function flatMap<I, M, O>(p: Parser<I, M>, f: (m: M) => Parser<I, O>): Parser<I, O> {

@@ -9,6 +9,7 @@ import {
   choice,
   pairR,
   many1,
+  seq,
 } from '../utils/parser/index.js'
 import {
   IdentToken,
@@ -17,6 +18,7 @@ import {
   keywords,
   KeywordToken,
   Symbol,
+  symbols,
   SymbolToken,
   Token,
 } from './token.js'
@@ -43,9 +45,8 @@ const identOrKeyword: Parser<string, IdentToken | KeywordToken> = flatMap(many1(
 
 // symbol
 function symbolOf<S extends Symbol>(s: S) {
-  return map(
-    satisfy((c: string): c is S => c === s, s),
-    (s) => Token.symbol(s)
+  return map(seq(...[...s].map((char) => satisfy((c: string) => c === char, char))), () =>
+    Token.symbol(s)
   )
 }
 

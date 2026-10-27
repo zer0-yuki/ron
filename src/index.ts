@@ -16,7 +16,8 @@ function makeCursor<T>(s: T[]): Cursor<T> {
 }
 
 function main() {
-  const src = 'f x 1 + (2 - 3) * 4'
+  // const src = 'f x 1 + (2 - 3) * 4'
+  const src = 'fun x -> fun y -> x + y'
   const lexResult = lex(makeCursor(Array.from(src)))
 
   if (!lexResult.result.ok) {

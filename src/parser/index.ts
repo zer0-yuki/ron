@@ -1,4 +1,12 @@
-import { Symbol, SymbolTokenOf, Token, TokenKind, TokenOf } from '../lexer/token.js'
+import {
+  Keyword,
+  KeywordTokenOf,
+  Symbol,
+  SymbolTokenOf,
+  Token,
+  TokenKind,
+  TokenOf,
+} from '../lexer/token.js'
 import {
   between,
   choice,
@@ -6,11 +14,14 @@ import {
   many,
   many1,
   map,
+  or,
   pair,
+  pairR,
   Parser,
   satisfy,
+  seq,
 } from '../utils/parser/index.js'
-import { additiveOps, Expr, multiplicativeOps } from './expr.js'
+import { additiveOps, Expr, multiplicativeOps, VarExpr } from './expr.js'
 
 function symbol<S extends Symbol>(s: S): Parser<Token, SymbolTokenOf<S>> {
   return satisfy(
@@ -18,12 +29,17 @@ function symbol<S extends Symbol>(s: S): Parser<Token, SymbolTokenOf<S>> {
     `symbol '${s}'`
   )
 }
+
+function keyword<K extends Keyword>(k: K): Parser<Token, KeywordTokenOf<K>> {
+  return satisfy((t: Token): t is KeywordTokenOf<K> => t.kind === 'keyword' && t.keyword === k)
+}
+
 function token<K extends TokenKind>(k: K, expected: string) {
   return satisfy((t: Token): t is TokenOf<K> => t.kind === k, expected)
 }
 
 // expr ::= addExpr
-const expr: Parser<Token, Expr> = lazy(() => addExpr)
+const expr: Parser<Token, Expr> = lazy(() => or(lambdaExpr, addExpr))
 
 const int = map(token('int', 'int'), (t) => Expr.int(t.value))
 
@@ -63,6 +79,17 @@ const mulExpr = map(
 const addExpr = map(
   pair(mulExpr, many(pair(choice(additiveOps.map(symbol), 'additive operator'), mulExpr))),
   ([first, rest]) => rest.reduce((l, [o, r]) => Expr.binary(o.symbol, l, r), first)
+)
+
+// paramList ::= ident (',' ident)*
+const paramList = map(
+  pair(ident, many(pairR(symbol(','), ident))),
+  ([first, rest]) => [first, ...rest] satisfies [VarExpr, ...VarExpr[]]
+)
+
+// lambdaExpr ::= 'fun' paramList '->' expr
+const lambdaExpr = map(seq(keyword('fun'), paramList, symbol('->'), expr), ([_, args, __, body]) =>
+  Expr.lambda(args, body)
 )
 
 export { expr as parse }

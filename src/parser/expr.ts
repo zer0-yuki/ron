@@ -27,6 +27,12 @@ export interface BinaryOpExprOf<O> {
   r: Expr
 }
 
+export interface LambdaExpr {
+  kind: 'lambda'
+  args: [Expr, ...Expr[]]
+  body: Expr
+}
+
 export const unaryOps = ['+', '-'] as const
 export type UnaryOp = (typeof unaryOps)[number]
 export type UnaryOpExpr = UnaryOpExprOf<UnaryOp>
@@ -40,7 +46,7 @@ export type BinaryOpExpr = BinaryOpExprOf<BinaryOp>
 export type Op = UnaryOp | BinaryOp
 export type OpExpr = UnaryOpExpr | BinaryOpExpr
 
-export type Expr = IntExpr | VarExpr | AppExpr | OpExpr
+export type Expr = IntExpr | VarExpr | AppExpr | OpExpr | LambdaExpr
 
 export const Expr = {
   int(v: number): IntExpr {
@@ -57,5 +63,8 @@ export const Expr = {
   },
   binary<O extends BinaryOp>(o: O, l: Expr, r: Expr): BinaryOpExprOf<O> {
     return { kind: 'binary', op: o, l, r }
+  },
+  lambda(args: [Expr, ...Expr[]], body: Expr): LambdaExpr {
+    return { kind: 'lambda', args, body }
   },
 }

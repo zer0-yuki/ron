@@ -18,11 +18,11 @@ export interface KeywordTokenOf<K> {
   keyword: K
 }
 
-export const symbols = ['+', '-', '*', '/', '(', ')'] as const
+export const symbols = ['->', '+', '-', '*', '/', '(', ')', ','] as const
 export type Symbol = (typeof symbols)[number]
 export type SymbolToken = SymbolTokenOf<Symbol>
 
-export const keywords = ['let', 'in'] as const
+export const keywords = ['let', 'in', 'fun'] as const
 export type Keyword = (typeof keywords)[number]
 export type KeywordToken = KeywordTokenOf<Keyword>
 

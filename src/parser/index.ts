@@ -21,7 +21,7 @@ import {
   satisfy,
   seq,
 } from '../utils/parser/index.js'
-import { additiveOps, Expr, multiplicativeOps, VarExpr } from './expr.js'
+import { additiveOps, Expr, multiplicativeOps, unaryOps, VarExpr } from './expr.js'
 
 function symbol<S extends Punct>(s: S): Parser<Token, PunctTokenOf<S>> {
   return satisfy(
@@ -57,7 +57,7 @@ const appExpr = map(many1(atomExpr), ([fn, ...args]) => {
 const unaryExpr: Parser<Token, Expr> = lazy(() =>
   choice(
     [
-      map(pair(choice([symbol('+'), symbol('-')], 'unary operator'), unaryExpr), ([o, e]) =>
+      map(pair(choice(unaryOps.map(symbol), 'unary operator'), unaryExpr), ([o, e]) =>
         Expr.unary(o.punct, e)
       ),
       appExpr,

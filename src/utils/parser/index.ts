@@ -8,15 +8,15 @@ export interface ParseResult<I, O> {
 }
 type InputOf<P> = P extends Parser<infer I, any> ? I : never
 type OutputOf<P> = P extends Parser<any, infer O> ? O : never
-type OutputsOf<Ps extends readonly Parser<any, any>[]> = {
+type OutputsOf<Ps extends readonly AnyParser[]> = {
   [K in keyof Ps]: OutputOf<Ps[K]>
 }
-type InputTupleOf<Ps extends readonly Parser<any, any>[]> = Ps extends [infer First, ...infer Rest]
-  ? Rest extends Parser<any, any>[]
+type InputTupleOf<Ps extends readonly AnyParser[]> = Ps extends [infer First, ...infer Rest]
+  ? Rest extends AnyParser[]
     ? [InputOf<First>, ...InputTupleOf<Rest>]
     : never
   : []
-type InputsOf<Ps extends readonly Parser<any, any>[]> =
+type InputsOf<Ps extends readonly AnyParser[]> =
   IsTuple<Ps> extends true ? TupleToIntersection<InputTupleOf<Ps>> : InputOf<Ps[number]>
 
 function parseOk<I, O>(c: Cursor<I>, o: O): ParseResult<I, O> {
@@ -34,6 +34,8 @@ export interface Cursor<I> {
 export interface Parser<I, O> {
   (cursor: Cursor<I>): ParseResult<I, O>
 }
+
+type AnyParser = Parser<any, any>
 
 export function succeed<I, O>(o: O): Parser<I, O> {
   return (c) => parseOk(c, o)
@@ -68,7 +70,7 @@ export function lazy<I, O>(f: () => Parser<I, O>): Parser<I, O> {
 }
 
 // Primitive
-export function choice<Ps extends Parser<any, any>[]>(
+export function choice<Ps extends AnyParser[]>(
   ps: Ps,
   expected: string = 'unknown'
 ): Parser<InputOf<Ps[number]>, OutputOf<Ps[number]>> {
@@ -98,7 +100,7 @@ export function or<I, O1, O2>(
 
 // seq () = succeed ()
 // seq (p : ps) = flatMap p (fun x -> map (seq ps) (fun xs -> (x : xs)))
-export function seq<Ps extends Parser<any, any>[]>(...ps: Ps): Parser<InputsOf<Ps>, OutputsOf<Ps>> {
+export function seq<Ps extends AnyParser[]>(...ps: Ps): Parser<InputsOf<Ps>, OutputsOf<Ps>> {
   return (c) => {
     const os: OutputsOf<Ps> = [] as OutputsOf<Ps>
     let cur = c

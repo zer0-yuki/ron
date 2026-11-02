@@ -1,6 +1,6 @@
 import { lex } from './lexer/index.js'
 import { parse } from './parser/index.js'
-import { cursorOf } from './utils/parser/index.js'
+import { cursorOf } from './core/parser/index.js'
 
 function main() {
   // const src = 'f x 1 + (2 - 3) * 4'

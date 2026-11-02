@@ -1,4 +1,4 @@
-import { Parser } from './parser/index.js'
+import { Parser } from '../core/parser/index.js'
 
 export interface LineColumn {
   readonly line: number

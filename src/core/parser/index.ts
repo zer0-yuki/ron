@@ -1,5 +1,5 @@
-import { Offset } from '../span.js'
-import { IsTuple, TupleToIntersection } from '../type.js'
+import { Offset } from '../../utils/span.js'
+import { IsTuple, TupleToIntersection } from '../../utils/type.js'
 import { ChoiceError, ParseError, SequenceError, UnexpectedError } from './error.js'
 
 export interface ParseResultMeta<I> {

@@ -11,7 +11,7 @@ import {
   pairR,
   many1,
   seq,
-} from '../utils/parser/index.js'
+} from '../core/parser/index.js'
 import { spanned } from '../utils/span.js'
 import {
   IdentToken,

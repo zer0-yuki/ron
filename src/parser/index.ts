@@ -20,7 +20,7 @@ import {
   recover,
   satisfy,
   seq,
-} from '../utils/parser/index.js'
+} from '../core/parser/index.js'
 import { Offset, Span } from '../utils/span.js'
 import { additiveOps, ErrorExpr, Expr, multiplicativeOps, unaryOps } from './expr.js'
 

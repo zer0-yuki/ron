@@ -4,7 +4,7 @@ import { cursorOf } from './core/parser/index.js'
 
 function main() {
   // const src = 'f x 1 + (2 - 3) * 4'
-  const src = '12345 + ) - 5 + 123 * 2 ('
+  const src = '\\f -> \\g -> \\x -> f (g x)'
   const lexResult = lex(cursorOf(Array.from(src), (_, i) => i, src.length))
 
   if (lexResult.hasError) {

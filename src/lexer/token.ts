@@ -21,12 +21,12 @@ export interface KeywordTokenOf<K> extends WithSpan {
 }
 
 export const punctsSingle = ['+', '-', '*', '/', '(', ')', ','] as const
-export const punctsDouble = ['->'] as const
+export const punctsDouble = ['->', '\\'] as const
 export const puncts = [...punctsDouble, ...punctsSingle] as const
 export type Punct = (typeof puncts)[number]
 export type PunctToken = PunctTokenOf<Punct>
 
-export const keywords = ['let', 'in', 'fun'] as const
+export const keywords = ['let', 'in'] as const
 export type Keyword = (typeof keywords)[number]
 export type KeywordToken = KeywordTokenOf<Keyword>
 

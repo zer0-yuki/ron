@@ -114,7 +114,7 @@ const paramList = many1(ident)
 // lambdaExpr ::= '\' paramList '->' expr
 const lambdaExpr = map(
   seq(punct('\\'), paramList, punct('->'), recover(expr, atClose, makeError)),
-  ([kwFun, args, __, body]) => Expr.lambda(args, body, Span.combine(kwFun.span, body.span))
+  ([backslash, args, __, body]) => Expr.lambda(args, body, Span.combine(backslash.span, body.span))
 )
 
 const parseExpr = recover(expr, () => false, makeError)

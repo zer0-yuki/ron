@@ -126,7 +126,6 @@ export function recover<I, O>(
   }
 }
 
-// Primitive
 function satisfy<I, O extends I>(pred: (input: I) => input is O, expected?: string): Parser<I, O>
 function satisfy<I>(pred: (input: I) => boolean, expected?: string): Parser<I, I>
 
@@ -141,7 +140,6 @@ function satisfy<I>(pred: (input: I) => boolean, expected?: string): Parser<I, I
 }
 export { satisfy }
 
-// lazy f = flatMap (succeed ()) f
 export function lazy<I, O>(f: () => Parser<I, O>): Parser<I, O> {
   let p: Parser<I, O> | undefined
   return (c) => {
@@ -150,7 +148,6 @@ export function lazy<I, O>(f: () => Parser<I, O>): Parser<I, O> {
   }
 }
 
-// Primitive
 export function choice<Ps extends AnyParser[]>(
   ps: Ps,
   expected?: string
@@ -166,7 +163,6 @@ export function choice<Ps extends AnyParser[]>(
   }
 }
 
-// or p1 p2 = choice (p1, p2)
 export function or<I, O1, O2>(
   p1: Parser<I, O1>,
   p2: Parser<I, O2>,
@@ -183,8 +179,6 @@ export function or<I, O1, O2>(
   }
 }
 
-// seq () = succeed ()
-// seq (p : ps) = flatMap p (fun x -> map (seq ps) (fun xs -> (x : xs)))
 export function seq<Ps extends AnyParser[]>(...ps: Ps): Parser<InputsOf<Ps>, OutputsOf<Ps>> {
   return (c) => {
     const os: OutputsOf<Ps> = [] as OutputsOf<Ps>
@@ -202,7 +196,6 @@ export function seq<Ps extends AnyParser[]>(...ps: Ps): Parser<InputsOf<Ps>, Out
   }
 }
 
-// pair p1 p2 = seq (p1, p2)
 export function pair<I, O1, O2>(p1: Parser<I, O1>, p2: Parser<I, O2>): Parser<I, [O1, O2]> {
   return (c) => {
     const r1 = p1(c)
@@ -219,7 +212,6 @@ export function pair<I, O1, O2>(p1: Parser<I, O1>, p2: Parser<I, O2>): Parser<I,
   }
 }
 
-// between pL p pR = map (seq (pL, p, pR)) (fun (_, x, _) -> x)
 export function between<I, O, L, R>(
   pL: Parser<I, L>,
   p: Parser<I, O>,
@@ -244,7 +236,6 @@ export function between<I, O, L, R>(
   }
 }
 
-// pairL p1 p2 = map (seq (p1, p2)) (fun (x, _) -> x)
 export function pairL<I, O1, O2>(p1: Parser<I, O1>, p2: Parser<I, O2>): Parser<I, O1> {
   return (c) => {
     const r1 = p1(c)
@@ -261,7 +252,6 @@ export function pairL<I, O1, O2>(p1: Parser<I, O1>, p2: Parser<I, O2>): Parser<I
   }
 }
 
-// pairR p1 p2 = map (seq (p1, p2)) (fun (_, x) -> x)
 export function pairR<I, O1, O2>(p1: Parser<I, O1>, p2: Parser<I, O2>): Parser<I, O2> {
   return (c) => {
     const r1 = p1(c)
@@ -278,7 +268,6 @@ export function pairR<I, O1, O2>(p1: Parser<I, O1>, p2: Parser<I, O2>): Parser<I
   }
 }
 
-// Primitive
 export function many<I, O>(p: Parser<I, O>): Parser<I, O[]> {
   return (c) => {
     const os: O[] = []
@@ -300,7 +289,6 @@ export function many<I, O>(p: Parser<I, O>): Parser<I, O[]> {
   }
 }
 
-// many1 p = map (pair p (many p)) (fun (x, xs) -> x : xs)
 export function many1<I, O>(p: Parser<I, O>): Parser<I, [O, ...O[]]> {
   return (c) => {
     const r0 = p(c)
@@ -326,7 +314,6 @@ export function many1<I, O>(p: Parser<I, O>): Parser<I, [O, ...O[]]> {
   }
 }
 
-// repeat p n = seq (replicate n p)
 export function repeat<I, O>(p: Parser<I, O>, n: number): Parser<I, O[]> {
   return (c) => {
     const os: O[] = []
@@ -345,7 +332,6 @@ export function repeat<I, O>(p: Parser<I, O>, n: number): Parser<I, O[]> {
   }
 }
 
-// Primitive
 export function flatMap<I, M, O>(p: Parser<I, M>, f: (m: M) => Parser<I, O>): Parser<I, O> {
   return (c) => {
     const r1 = p(c)
@@ -362,7 +348,6 @@ export function flatMap<I, M, O>(p: Parser<I, M>, f: (m: M) => Parser<I, O>): Pa
   }
 }
 
-// map p f = flatMap p (fun m -> succeed (f m))
 export function map<I, M, O>(p: Parser<I, M>, f: (m: M) => O): Parser<I, O> {
   return (c) => {
     const r = p(c)

@@ -66,14 +66,15 @@ export interface Cursor<I> {
 
 export function cursorOf<I>(
   inputs: readonly I[],
-  offsetOf: (input: I, i: number) => Offset
+  offsetOf: (input: I, i: number) => Offset,
+  limit: Offset
 ): Cursor<I> {
   const mk = (p: number): Cursor<I> => ({
     current: p < inputs.length ? inputs[p] : undefined,
     advance() {
       return mk(p + 1)
     },
-    position: p < inputs.length ? offsetOf(inputs[p], p) : inputs.length,
+    position: p < inputs.length ? offsetOf(inputs[p], p) : limit,
   })
   return mk(0)
 }

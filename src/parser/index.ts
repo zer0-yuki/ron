@@ -111,7 +111,7 @@ const addExpr = map(
 // paramList ::= ident+
 const paramList = many1(ident)
 
-// lambdaExpr ::= 'fun' paramList '->' expr
+// lambdaExpr ::= '\' paramList '->' expr
 const lambdaExpr = map(
   seq(punct('\\'), paramList, punct('->'), recover(expr, atClose, makeError)),
   ([kwFun, args, __, body]) => Expr.lambda(args, body, Span.combine(kwFun.span, body.span))

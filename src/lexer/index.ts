@@ -11,6 +11,7 @@ import {
   pairR,
   many1,
   seq,
+  skipUntil,
 } from '../core/parser/index.js'
 import { spanned } from '../utils/span.js'
 import {
@@ -27,10 +28,7 @@ import {
 } from './token.js'
 
 // whitespace
-const ws = map(
-  many(satisfy((c: string) => c === ' ' || c === '\t' || c === '\n' || c === '\r', 'whitespace')),
-  () => {}
-)
+const ws = skipUntil((c: string) => !(c === ' ' || c === '\t' || c === '\n' || c === '\r'))
 
 // int
 const digit = satisfy((c: string) => c >= '0' && c <= '9', 'digits')

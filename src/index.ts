@@ -1,42 +1,34 @@
 import { lex } from './lexer/index.js'
 import { parse } from './parser/index.js'
-import { Cursor } from './utils/parser/index.js'
-
-function makeCursor<T>(s: T[]): Cursor<T> {
-  const mk = (p: number): Cursor<T> => ({
-    peek() {
-      return p < s.length ? s[p] : undefined
-    },
-    advance() {
-      return mk(p + 1)
-    },
-  })
-  return mk(0)
-}
+import { cursorOf } from './utils/parser/index.js'
 
 function main() {
   // const src = 'f x 1 + (2 - 3) * 4'
-  const src = 'fun x -> fun y -> x + y'
-  const lexResult = lex(makeCursor(Array.from(src)))
+  const src = '12345 + -'
+  const lexResult = lex(cursorOf(Array.from(src), (_, i) => i))
 
-  if (!lexResult.result.ok) {
-    console.log('[Lex Error]', lexResult.result.err)
-    return
+  if (lexResult.hasError) {
+    console.log('[Lex Error]')
+    console.dir(lexResult.error, { depth: null })
   }
 
-  console.log('Cursor at end:', lexResult.cursor.peek() === undefined)
+  if (!lexResult.hasOutcome) return
+
+  console.log('Cursor at end:', lexResult.cursor.current === undefined)
   console.log('Tokens:')
-  console.dir(lexResult.result.value, { depth: null })
+  console.dir(lexResult.outcome, { depth: null })
 
-  const parseResult = parse(makeCursor(lexResult.result.value))
+  const parseResult = parse(cursorOf(lexResult.outcome, (t) => t.span.start))
 
-  if (!parseResult.result.ok) {
-    console.log('[Parse Error]', parseResult.result.err)
-    return
+  if (parseResult.hasError) {
+    console.log('[Parse Error]')
+    console.dir(parseResult.error, { depth: null })
   }
+
+  if (!parseResult.hasOutcome) return
 
   console.log('AST:')
-  console.dir(parseResult.result.value, { depth: null })
+  console.dir(parseResult.outcome, { depth: null })
 }
 
 main()

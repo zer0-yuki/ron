@@ -1,36 +1,42 @@
-export interface IntExpr {
+import { Span, WithSpan } from '../utils/span.js'
+
+export interface IntExpr extends WithSpan {
   kind: 'int'
   value: number
 }
 
-export interface VarExpr {
+export interface VarExpr extends WithSpan {
   kind: 'var'
   name: string
 }
 
-export interface AppExpr {
+export interface AppExpr extends WithSpan {
   kind: 'app'
   fn: Expr
   args: [Expr, ...Expr[]]
 }
 
-export interface UnaryOpExprOf<O> {
+export interface UnaryOpExprOf<O> extends WithSpan {
   kind: 'unary'
   op: O
   e: Expr
 }
 
-export interface BinaryOpExprOf<O> {
+export interface BinaryOpExprOf<O> extends WithSpan {
   kind: 'binary'
   op: O
   l: Expr
   r: Expr
 }
 
-export interface LambdaExpr {
+export interface LambdaExpr extends WithSpan {
   kind: 'lambda'
   args: [Expr, ...Expr[]]
   body: Expr
+}
+
+export interface ErrorExpr extends WithSpan {
+  kind: 'error'
 }
 
 export const unaryOps = ['+', '-'] as const
@@ -46,25 +52,28 @@ export type BinaryOpExpr = BinaryOpExprOf<BinaryOp>
 export type Op = UnaryOp | BinaryOp
 export type OpExpr = UnaryOpExpr | BinaryOpExpr
 
-export type Expr = IntExpr | VarExpr | AppExpr | OpExpr | LambdaExpr
+export type Expr = IntExpr | VarExpr | AppExpr | OpExpr | LambdaExpr | ErrorExpr
 
 export const Expr = {
-  int(v: number): IntExpr {
-    return { kind: 'int', value: v }
+  int(v: number, span: Span): IntExpr {
+    return { kind: 'int', value: v, span }
   },
-  var(name: string): VarExpr {
-    return { kind: 'var', name }
+  var(name: string, span: Span): VarExpr {
+    return { kind: 'var', name, span }
   },
-  app(fn: Expr, args: [Expr, ...Expr[]]): AppExpr {
-    return { kind: 'app', fn, args }
+  app(fn: Expr, args: [Expr, ...Expr[]], span: Span): AppExpr {
+    return { kind: 'app', fn, args, span }
   },
-  unary<O extends UnaryOp>(o: O, e: Expr): UnaryOpExprOf<O> {
-    return { kind: 'unary', op: o, e }
+  unary<O extends UnaryOp>(o: O, e: Expr, span: Span): UnaryOpExprOf<O> {
+    return { kind: 'unary', op: o, e, span }
   },
-  binary<O extends BinaryOp>(o: O, l: Expr, r: Expr): BinaryOpExprOf<O> {
-    return { kind: 'binary', op: o, l, r }
+  binary<O extends BinaryOp>(o: O, l: Expr, r: Expr, span: Span): BinaryOpExprOf<O> {
+    return { kind: 'binary', op: o, l, r, span }
   },
-  lambda(args: [Expr, ...Expr[]], body: Expr): LambdaExpr {
-    return { kind: 'lambda', args, body }
+  lambda(args: [Expr, ...Expr[]], body: Expr, span: Span): LambdaExpr {
+    return { kind: 'lambda', args, body, span }
+  },
+  error(span: Span): ErrorExpr {
+    return { kind: 'error', span }
   },
 }

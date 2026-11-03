@@ -31,7 +31,13 @@ export interface BinaryOpExprOf<O> extends WithSpan {
 
 export interface LambdaExpr extends WithSpan {
   kind: 'lambda'
-  args: [Expr, ...Expr[]]
+  args: readonly [VarExpr, ...VarExpr[]]
+  body: Expr
+}
+
+export interface LetInExpr extends WithSpan {
+  kind: 'letin'
+  bindings: readonly [readonly [VarExpr, Expr], ...(readonly [VarExpr, Expr])[]]
   body: Expr
 }
 
@@ -52,7 +58,7 @@ export type BinaryOpExpr = BinaryOpExprOf<BinaryOp>
 export type Op = UnaryOp | BinaryOp
 export type OpExpr = UnaryOpExpr | BinaryOpExpr
 
-export type Expr = IntExpr | VarExpr | AppExpr | OpExpr | LambdaExpr | ErrorExpr
+export type Expr = IntExpr | VarExpr | AppExpr | OpExpr | LambdaExpr | LetInExpr | ErrorExpr
 
 export const Expr = {
   int(v: number, span: Span): IntExpr {
@@ -70,8 +76,15 @@ export const Expr = {
   binary<O extends BinaryOp>(o: O, l: Expr, r: Expr, span: Span): BinaryOpExprOf<O> {
     return { kind: 'binary', op: o, l, r, span }
   },
-  lambda(args: [Expr, ...Expr[]], body: Expr, span: Span): LambdaExpr {
+  lambda(args: readonly [VarExpr, ...VarExpr[]], body: Expr, span: Span): LambdaExpr {
     return { kind: 'lambda', args, body, span }
+  },
+  letIn(
+    bindings: readonly [readonly [VarExpr, Expr], ...(readonly [VarExpr, Expr])[]],
+    body: Expr,
+    span: Span
+  ): LetInExpr {
+    return { kind: 'letin', bindings, body, span }
   },
   error(span: Span): ErrorExpr {
     return { kind: 'error', span }

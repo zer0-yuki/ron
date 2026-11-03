@@ -14,7 +14,6 @@ import {
   many,
   many1,
   map,
-  or,
   pair,
   Parser,
   recover,
@@ -46,7 +45,7 @@ function token<K extends TokenKind>(k: K, expected: string) {
 const atClose = (t: Token) => t.kind === 'punct' && (t.punct === ')' || t.punct === ',')
 
 // expr ::= addExpr
-const expr: Parser<Token, Expr> = lazy(() => or(lambdaExpr, addExpr))
+const expr: Parser<Token, Expr> = lazy(() => choice([lambdaExpr, letInExpr, addExpr], 'expression'))
 
 const int = map(token('int', 'int'), (t) => Expr.int(t.value, t.span))
 
@@ -114,7 +113,18 @@ const paramList = many1(ident)
 // lambdaExpr ::= '\' paramList '->' expr
 const lambdaExpr = map(
   seq(punct('\\'), paramList, punct('->'), recover(expr, atClose, makeError)),
-  ([backslash, args, __, body]) => Expr.lambda(args, body, Span.combine(backslash.span, body.span))
+  ([backslash, args, _, body]) => Expr.lambda(args, body, Span.combine(backslash.span, body.span))
+)
+
+// letInExpr ::= 'let' (ident '=' expr) 'in' expr
+const letInExpr = map(
+  seq(
+    keyword('let'),
+    many1(map(seq(ident, punct('='), expr), ([name, _, e]) => [name, e] as const)),
+    keyword('in'),
+    expr
+  ),
+  ([kwLet, bindings, _, body]) => Expr.letIn(bindings, body, Span.combine(kwLet.span, body.span))
 )
 
 const parseExpr = recover(expr, () => false, makeError)
